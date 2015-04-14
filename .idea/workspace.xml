@@ -30,8 +30,8 @@
       <file leaf-file-name="GetData.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/GetData.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="4.3643723" vertical-offset="0" max-vertical-offset="1276">
-              <caret line="49" column="80" selection-start-line="49" selection-start-column="80" selection-end-line="49" selection-end-column="80" />
+            <state vertical-scroll-proportion="0.8016194" vertical-offset="0" max-vertical-offset="1320">
+              <caret line="9" column="0" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
               <folding>
                 <element signature="e#22#53#0" expanded="true" />
               </folding>
@@ -112,11 +112,11 @@
         <option value="$USER_HOME$/Downloads/alchemy (1).py" />
         <option value="$PROJECT_DIR$/nltk.py" />
         <option value="$PROJECT_DIR$/patterns weather" />
-        <option value="$PROJECT_DIR$/GetData.py" />
         <option value="$PROJECT_DIR$/collectingKW.py" />
         <option value="$PROJECT_DIR$/model.py" />
         <option value="$PROJECT_DIR$/pipeline.py" />
         <option value="$USER_HOME$/Downloads/DF.py" />
+        <option value="$PROJECT_DIR$/GetData.py" />
       </list>
     </option>
   </component>
@@ -153,10 +153,6 @@
         <subPane subId="Project Files">
           <PATH>
             <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT USER_OBJECT="AB">
               <option name="myItemId" value="" />
               <option name="myItemType" value="" />
             </PATH_ELEMENT>
@@ -571,7 +567,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/GetData.py</url>
-          <line>38</line>
+          <line>40</line>
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/model.py</url>
@@ -580,7 +576,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/GetData.py</url>
-          <line>28</line>
+          <line>30</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
@@ -958,8 +954,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/GetData.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="4.3643723" vertical-offset="0" max-vertical-offset="1276">
-          <caret line="49" column="80" selection-start-line="49" selection-start-column="80" selection-end-line="49" selection-end-column="80" />
+        <state vertical-scroll-proportion="0.8016194" vertical-offset="0" max-vertical-offset="1320">
+          <caret line="9" column="0" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
           <folding>
             <element signature="e#22#53#0" expanded="true" />
           </folding>

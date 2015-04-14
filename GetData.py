@@ -6,6 +6,8 @@ from nltk.corpus import stopwords
 stop = stopwords.words('english')
 
 
+
+
 def getdata(url):
     response = urllib.urlopen(url);
     data = json.loads(response.read())
