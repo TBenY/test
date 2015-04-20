@@ -1,11 +1,13 @@
 __author__ = 'TalBY'
 
 import nltk, cPickle, re, string
+import numpy as np
 from nltk.util import ngrams
 from nltk import word_tokenize
 from string import punctuation
 from nltk.corpus import stopwords
 from alchemyapi import AlchemyAPI
+from sklearn.feature_extraction.text import CountVectorizer
 
 exclude = set(string.punctuation)
 stop = stopwords.words('english')
@@ -100,10 +102,60 @@ def add_ngrams(text, n=2):
 #     print(p)
 
 ### to run on a stream of words need to change the function
+##NB
+def NB(dataf, ratio):
+    """
+    :ratio train test ratio
+    :param dataf: DATAFRAME of class and tokems to train
+    :return: predictions for test data
+        """
+    import numpy
+    from sklearn.naive_bayes import MultinomialNB
+    idx = int(ratio*len(dataf))
+    train = dataf[:idx]
+    test = dataf[idx:]
+    count_vectorizer = CountVectorizer()
+    counts = count_vectorizer.fit_transform(numpy.asarray(train['text']))
+
+
+    classifier = MultinomialNB()
+    targets = numpy.asarray(train['class'])
+    classifier.fit(counts, targets)
+    example_counts = count_vectorizer.transform(test['text'])
+    predictions = classifier.predict(example_counts)
+
+    from sklearn.metrics import accuracy_score
+    accuracy_score(predictions, test['class'])
+
+    return accuracy_score(predictions, test['class']), predictions
+
+
+def splitsets(dataf, ratio):
+    idx = int(ratio*len(dataf))
+    train = dataf[:idx]
+    test = dataf[idx:]
+    return train, test
 
 
 
+def LG(train, test):
+    """
+    :ratio train test ratio
+    :param dataf: DATAFRAME of class and tokems to train
+    :return: predictions for test data
+        """
 
+    from sklearn import linear_model
+    count_vectorizer =  CountVectorizer( min_df=15, max_df=.95, max_features=3000)
+    counts = count_vectorizer.fit_transform(np.asarray(train['text']))
+    targets = np.asarray(train['class'])
+    vocab = np.array(count_vectorizer.get_feature_names())
+    logreg = linear_model.LogisticRegression(C=1e1)# the smaller the bigger the regularization
+    logreg.fit(counts, targets)
+    testdata = count_vectorizer.transform(np.asarray(test['text']))
+    predictions = logreg.predict(testdata)
 
+    from sklearn.metrics import accuracy_score
+    accuracy_score(predictions, test['class'])
 
-
+    return accuracy_score(predictions, test['class']), predictions
