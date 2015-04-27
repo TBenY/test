@@ -6,12 +6,13 @@ from nltk.util import ngrams
 from nltk import word_tokenize
 from string import punctuation
 from nltk.corpus import stopwords
-from alchemyapi import AlchemyAPI
+# from alchemyapi import AlchemyAPI
 from sklearn.feature_extraction.text import CountVectorizer
-
+from sklearn.pipeline import Pipeline
 exclude = set(string.punctuation)
 stop = stopwords.words('english')
-alchemyapi = AlchemyAPI()
+from sklearn import linear_model
+# alchemyapi = AlchemyAPI()
 
 
 # cor = "Greater, taken they're spending make higher, it'll on one hand, to, people more if they go outside of their particular provider network putting, people that had no coverage, more affordable, population I think we're going to continue is going to be, to try and make people well obviously I'm what the weather healthcare cost go up rapidly or not is going to depend on how we can control cause going forward what strategies are out there that we're using or or should be using to keep spending growth low, well that's actually true in fact I think the way you phrase that is important."
@@ -62,25 +63,6 @@ def computeP(KW, corlist, l_ngrams):
         return sum(probs) / float(len(corlist))
 
 
-def computeP2(KW, cor):
-    '''weather is a list of words  for a given class
-    cor is a corpus text
-    '''
-    alchemyapi = AlchemyAPI()
-    corKW = alchemyapi.keywords("text", cor)
-    # corKW = corKW['keywords']
-    both = set(corKW) & set(KW)
-    if both==set([]):
-        return 0, []
-    probs = [1 for w in both]
-    if len(corKW) < 1:
-        return -1, []
-    elif probs == []:
-        return 0
-    elif 1 < sum(probs) / float(len(corKW)):
-        print('ERROR', len(corKW))
-    else:
-        return sum(probs) / float(len(corKW)), corKW
 
 
 #ADD TRI&BIGRAMS
@@ -119,21 +101,24 @@ def NB(dataf, ratio):
 
 
     classifier = MultinomialNB()
-    targets = numpy.asarray(train['class'])
+    targets = numpy.asarray(train['cl'])
     classifier.fit(counts, targets)
     example_counts = count_vectorizer.transform(test['text'])
     predictions = classifier.predict(example_counts)
 
     from sklearn.metrics import accuracy_score
-    accuracy_score(predictions, test['class'])
+    accuracy_score(predictions, test['cl'])
 
-    return accuracy_score(predictions, test['class']), predictions
+    return accuracy_score(predictions, test['cl']), predictions
 
 
 def splitsets(dataf, ratio):
-    idx = int(ratio*len(dataf))
-    train = dataf[:idx]
-    test = dataf[idx:]
+    # idx = int(ratio*len(dataf))
+    msk = np.random.rand(len(dataf)) < ratio
+    # train = dataf[:idx]
+    # test = dataf[idx:]
+    train = dataf[msk]
+    test = dataf[~msk]
     return train, test
 
 
@@ -145,17 +130,127 @@ def LG(train, test):
     :return: predictions for test data
         """
 
-    from sklearn import linear_model
-    count_vectorizer =  CountVectorizer( min_df=15, max_df=.95, max_features=3000)
+
+    count_vectorizer =  CountVectorizer( min_df=5, max_df=.95, max_features=5000, ngram_range=(1, 1))
     counts = count_vectorizer.fit_transform(np.asarray(train['text']))
-    targets = np.asarray(train['class'])
+    targets = np.asarray(train['cl'])
     vocab = np.array(count_vectorizer.get_feature_names())
-    logreg = linear_model.LogisticRegression(C=1e1)# the smaller the bigger the regularization
+    logreg = linear_model.LogisticRegression(C=1e4)# the smaller the bigger the regularization
     logreg.fit(counts, targets)
+    return logreg, count_vectorizer
+
+def testing(test, logreg, count_vectorizer):
     testdata = count_vectorizer.transform(np.asarray(test['text']))
     predictions = logreg.predict(testdata)
 
     from sklearn.metrics import accuracy_score
-    accuracy_score(predictions, test['class'])
+    accuracy_score(predictions, test['cl'])
 
-    return accuracy_score(predictions, test['class']), predictions
+    return accuracy_score(predictions, test['cl']), predictions
+
+
+def LGcv(train, test):
+#          """
+    from sklearn.linear_model import LogisticRegressionCV
+    from sklearn.metrics import log_loss
+    from sklearn.cross_validation import cross_val_score
+    from scipy.stats import sem
+
+    # pipeline = Pipeline((
+    #     ('vec', CountVectorizer( min_df=5, max_df=.95, max_features=5000, ngram_range=(1, 2)),
+    #      ('lg', linear_model.LogisticRegression(C=1e4)))
+    # ))
+    pipeline = Pipeline((
+    ('vec', CountVectorizer( min_df=5, max_df=.95, max_features=5000, ngram_range=(1, 2))),
+    ('lg', linear_model.LogisticRegression(C=1e4)),
+    ))
+
+    targets = np.asarray(train['cl'])
+    scores = cross_val_score(pipeline, np.asarray(train['text']),
+                         targets, cv=3, n_jobs=-1)
+
+    print(scores.mean(), 'std:' , sem(scores))
+    return
+    # model_regression = LogisticRegressionCV(Cs=10, fit_intercept=True, cv=5)
+    # model_regression.fit()
+
+#     from sklearn import LogisticRegression
+#     count_vectorizer =  CountVectorizer( min_df=5, max_df=1, max_features=5000, ngram_range=(1, 2))
+#     counts = count_vectorizer.fit_transform(np.asarray(train['text']))
+#     targets = np.asarray(train['class'])
+#
+#     from sklearn.cross_validation import cross_val_score
+#
+#     logreg = LogisticRegression(C=1)
+#     scores = cross_val_score(logreg, counts, targets, cv=5, scoring='accuracy')
+#     print("Logistic Regression CV scores:")
+#     print("min: {:.3f}, mean: {:.3f}, max: {:.3f}".format(scores.min(), scores.mean(), scores.max()))
+#
+#     testdata = count_vectorizer.transform(np.asarray(test['text']))
+#     predictions = logreg.predict(testdata)
+#
+#     from sklearn.metrics import accuracy_score
+#     accuracy_score(predictions, test['class'])
+#
+#     return accuracy_score(predictions, test['class']), predictions
+
+
+# from __future__ import print_function
+import sklearn
+from sklearn import datasets
+from sklearn.cross_validation import train_test_split
+from sklearn.grid_search import GridSearchCV
+from sklearn.metrics import classification_report
+from sklearn.svm import SVC
+
+
+# sklearn.linear_model.LogisticRegressionCV(Cs=10, fit_intercept=True, cv=None, dual=False, penalty='l2', scoring=None, solver='lbfgs', tol=0.0001, max_iter=100, class_weight=None, n_jobs=1, verbose=0, refit=True, intercept_scaling=1.0, multi_class='ovr'
+# parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
+# svr = svm.SVC()
+# clf = grid_search.GridSearchCV(svr, parameters)
+# param_grid = [
+#   {'C': [1, 10, 100, 1000], 'kernel': ['linear']},
+#   {'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']},
+#  ]
+
+#
+# def computeP2(KW, cor):
+#     '''weather is a list of words  for a given class
+#     cor is a corpus text
+#     '''
+#     alchemyapi = AlchemyAPI()
+#     corKW = alchemyapi.keywords("text", cor)
+#     # corKW = corKW['keywords']
+#     both = set(corKW) & set(KW)
+#     if both==set([]):
+#         return 0, []
+#     probs = [1 for w in both]
+#     if len(corKW) < 1:
+#         return -1, []
+#     elif probs == []:
+#         return 0
+#     elif 1 < sum(probs) / float(len(corKW)):
+#         print('ERROR', len(corKW))
+#     else:
+#         return sum(probs) / float(len(corKW)), corKW
+#
+
+
+from sklearn.cross_validation import train_test_split
+
+
+if __name__ == '__main__':
+    dataf = cPickle.load(open("C:\Users\TalBY\PycharmProjects\AB\dataf.p", "rb"))
+    train, test = splitsets(dataf, 0.8)
+    # acc, pred = NB(dataf, 0.8)
+    # for i in (test.split()):
+    #     cur =
+    # for i in range(0, len(test)):
+
+    # acc, pred = LG(train, test)
+    # print(acc)
+    # LGcv(train, test)
+    logreg, count_vectorizer = LG(train, test)
+    acc, pred =  testing(test, logreg, count_vectorizer)
+    print(acc)
+

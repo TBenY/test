@@ -1,11 +1,9 @@
 __author__ = 'TalBY'
 
-import urllib, json, nltk, json
+import urllib, json, nltk, json, cPickle
 from nltk import FreqDist
 from nltk.corpus import stopwords
 stop = stopwords.words('english')
-
-
 
 
 def getdata(url):
@@ -53,3 +51,7 @@ if __name__ == '__main__':
 
     cPickle.dump(freqd, open( "freqd.p", "wb" ) )
     print(len(freqd))
+
+
+
+    ###

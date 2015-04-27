@@ -3,12 +3,20 @@ from pandas import DataFrame
 import nltk
 
 def build_data_frame(data, classification):
-    data_frame = DataFrame({'text': [], 'class': []})
+    data_frame = DataFrame({'text': [], 'cl': [], 'id':[]})
+    ids = []
     for d in data:
-        # text = tokening(d['text'])
-        # data_frame = data_frame.append(DataFrame({'text': [text], 'class': classification}))
-        data_frame = data_frame.append(DataFrame({'text': d['text'], 'class': classification}))
-    return data_frame
+        idx = d['id']
+        if idx not in ids:
+            ids.append(idx)
+            # text = tokening(d['text'])
+            # data_frame = data_frame.append(DataFrame({'text': [text], 'class': classification}))
+            data_frame = data_frame.append(DataFrame({'text': d['text'], 'cl': classification, 'id': d['id']}))
+        else:
+            continue
+
+
+    return data_frame, ids
 
 # dataf = DataFrame({'text': [], 'class': []})
 # dataf = build_data_frame(data, [1])

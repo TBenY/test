@@ -3,18 +3,15 @@ import urllib, json, nltk, json, cPickle, re, string, numpy
 from nltk import FreqDist
 from nltk.corpus import stopwords
 stop = stopwords.words('english')
-from model import LG, NB, splitsets, add_singles, computeP, computeP2, add_ngrams
+from model import LG,testing, NB, splitsets, add_singles, computeP, add_ngrams
 from DF import build_data_frame, tokening
 from nltk.util import ngrams
 from nltk import word_tokenize
 from string import punctuation
 from nltk.corpus import stopwords
-from alchemyapi import AlchemyAPI
 exclude = set(string.punctuation)
 import pandas as pd
 from pandas import DataFrame,Series
-
-alchemyapi = AlchemyAPI()
 
 
 def getdata(url):
@@ -50,71 +47,103 @@ def radioshows(data):
 
 
 if __name__ == '__main__':
-    phrases = ["Bloomberg%20travel%20weather","weather", "Bloomberg%20weather%20center", "Bloomberg%20meteorologist%20Gary%20Best",  "travel%20weather%20reports"]
+    phrases = ["Bloomberg%20travel%20weather", "weather", "Bloomberg%20weather%20center", "Bloomberg%20meteorologist%20Gary%20Best",  "travel%20weather%20reports"]
     data = []
+
+    li = ['Weather', 'Weather Channel', 'Forecast', 'Chilly', 'Wet', 'Snow', 'Rain', 'Temperature', 'Meteorologist', 'Storms', 'Dry', 'Clouds', 'Cold', 'Warms','Cloudy', 'Sunshine', 'Sunny', 'Showers', 'Cooler', 'Hurricane', 'Climate', 'Winter', 'Rainbow', 'Seasonal', 'Thunder', 'Atlantic', 'Breeze', 'Gusty', 'Fog', 'Snowfall', 'Colder', 'Chill', 'Skies', 'Lows', 'Breezy', 'Wind', 'Windy', 'Overnight']
+
+    # F = map(lambda x:str(x) , list)
+    l, ids = [], []
+    for st in li:
+        l.append(st.replace(" ", "%20"))
+
     for phrase in phrases:
         url = "http://api.audioburst.com/Search?value="+phrase+"&filter=sourceKey%20eq%205843%20&top=1000"
         # print(phrase)
         data.extend(getdata(url))
-        for num in range(1000, 2000, 1000):
+        for d in data:
+            if d['id'] is not None:
+                ids.append(d['id'])
+        for num in range(1000, 3000, 1000):
             url = "http://api.audioburst.com/Search?value="+phrase+"&filter=sourceKey%20eq%205843%20&top=1000&skip="+str(num)
             try:
                 data.extend(getdata(url))
             except:
                 continue
 
-
     print(len(data))
+    dataf, ids = build_data_frame(data, [1])
 
 # print len(data.values()[0])
 
-    phrases = ["finance"]
-
-    for phrase in phrases:
-        url = "http://api.audioburst.com/Search?value="+phrase+"&filter=sourceKey%20eq%205843%20&top=1000"
-        print(phrase)
-        data2 = getdata(url)
-        for num in range(1000, 2000, 1000):
-            url = "http://api.audioburst.com/Search?value="+phrase+"&filter=sourceKey%20eq%205843%20&top=1000&skip="+str(num)
-            try:
-                data.extend(getdata(url))
-            except:
-                continue
-
-    # weatherKW_5843 = GETkW(data)
-    # financeKW_5843 = GETkW(data2)
-    # weatherKW_5843 = cPickle.load(open("weatherKW_5843.p", "rb"))
-
-    # cPickle.dump(weatherKW_5843, open( "weatherKW_5843.p", "wb" ) )
-    # p_cumm_D, j = {}, 0
+    # phrases = ["finance"]
     #
-    #
-    # #build dataframe
+    # for phrase in phrases:
+    #     url = "http://api.audioburst.com/Search?value="+phrase+"&filter=sourceKey%20eq%205843%20&top=1000"
+    #     print(phrase)
+    #     data2 = getdata(url)
+    #     for num in range(1000, 3000, 1000):
+    #         url = "http://api.audioburst.com/Search?value="+phrase+"&filter=sourceKey%20eq%205843%20&top=1000&skip="+str(num)
+    #         try:
+    #             data2.extend(getdata(url))
+    #         except:
+    #             continue
+    # dataf2 = build_data_frame(data2, [0])
 
-    dataf = build_data_frame(data, [1])
-    dataf = dataf.append(build_data_frame(data2, [0]))
-    dataf.index = [i for i in range(0, len(dataf))]
-    dataf = dataf.reindex(numpy.random.permutation(dataf.index))
+
+    workfile = 'C:\Users\TalBY\Downloads\List if IDs_2000.txt'
+    classification = [0]
+    data_frame = DataFrame({'text': [], 'cl': [], 'id': []})
+    with open(workfile) as f:
+        lines = f.readlines()
+    c=0
+    for idx in lines:
+        # if c == 1996:
+        #     x=1
+        c =c+1
+        idxx = idx.replace('\r', '').replace('\n','')
+        if idxx not in ids:
+            ids.append(idxx)
+            url = "".join(['http://storageaudiobursts.blob.core.windows.net/nlp/', idx.replace('\r', '').replace('\n',''),'.json' ])
+            print(c)
+            response = urllib.urlopen(url)
+            data = json.loads(response.read())
+            data_frame = data_frame.append(DataFrame({'text': data['text'], 'cl': [0], 'id':idxx}))
+        else:
+            continue
+    print(len(lines) == len(data_frame))
+    print('ids:', len(ids))
+
+
+    # dataf = dataf.append(build_data_frame(data2, [0]))
+    dataf = dataf.append(data_frame)
+    # dataf = dataf.append(dataf2)
+    # dataf.index = [i for i in range(0, len(dataf))]
+    # dataf = dataf.reindex(numpy.random.permutation(dataf.index))
     # cPickle.dump(dataf, open("dataf.p", "wb"))
     print(len(dataf))
+    cPickle.dump(dataf, open("dataf.p", "wb" ))
     train, test = splitsets(dataf, 0.8)
-    # acc, pred = NB(dataf, 0.8)
-    # for i in (test.split()):
-    #     cur =
-    # for i in range(0, len(test)):
-    acc, pred = LG(train, test)
+
+    print(set(train.id) & set(test.id))
+    logreg, count_vectorizer = LG(train, test)
+    acc, pred =  testing(test, logreg, count_vectorizer)
+
+
+
     print(acc)
+    zipped = zip(test.text, pred)
+    # for i in zipped:
+    #     print (i)
+
 
     # for d in data[:2]:
     #     # d = alchemyapi.taxonomy("text", cor)
     #     # label = d['taxonomy'][0]['label']
     #     #know the weatherKW_5843 by the label
     #     # will be extraxted in real timE - TODO
-    #
-    #
-    #
-    #
-    #
+
+
     #     KW = weatherKW_5843[d['showName']]
     #
     #     cor = d['text']
