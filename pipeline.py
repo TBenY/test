@@ -5,10 +5,7 @@ from nltk.corpus import stopwords
 stop = stopwords.words('english')
 from model import LG,testing, NB, splitsets, add_singles, computeP, add_ngrams
 from DF import build_data_frame, tokening
-from nltk.util import ngrams
-from nltk import word_tokenize
-from string import punctuation
-from nltk.corpus import stopwords
+
 exclude = set(string.punctuation)
 import pandas as pd
 from pandas import DataFrame,Series
@@ -74,38 +71,17 @@ if __name__ == '__main__':
     print(len(data))
     dataf, ids = build_data_frame(data, [1])
 
-# print len(data.values()[0])
-
-    # phrases = ["finance"]
-    #
-    # for phrase in phrases:
-    #     url = "http://api.audioburst.com/Search?value="+phrase+"&filter=sourceKey%20eq%205843%20&top=1000"
-    #     print(phrase)
-    #     data2 = getdata(url)
-    #     for num in range(1000, 3000, 1000):
-    #         url = "http://api.audioburst.com/Search?value="+phrase+"&filter=sourceKey%20eq%205843%20&top=1000&skip="+str(num)
-    #         try:
-    #             data2.extend(getdata(url))
-    #         except:
-    #             continue
-    # dataf2 = build_data_frame(data2, [0])
-
-
     workfile = 'C:\Users\TalBY\Downloads\List if IDs_2000.txt'
     classification = [0]
     data_frame = DataFrame({'text': [], 'cl': [], 'id': []})
     with open(workfile) as f:
         lines = f.readlines()
-    c=0
+
     for idx in lines:
-        # if c == 1996:
-        #     x=1
-        c =c+1
         idxx = idx.replace('\r', '').replace('\n','')
         if idxx not in ids:
             ids.append(idxx)
             url = "".join(['http://storageaudiobursts.blob.core.windows.net/nlp/', idx.replace('\r', '').replace('\n',''),'.json' ])
-            print(c)
             response = urllib.urlopen(url)
             data = json.loads(response.read())
             data_frame = data_frame.append(DataFrame({'text': data['text'], 'cl': [0], 'id':idxx}))
@@ -124,18 +100,18 @@ if __name__ == '__main__':
     print(len(dataf))
     cPickle.dump(dataf, open("dataf.p", "wb" ))
     train, test = splitsets(dataf, 0.8)
-
-    print(set(train.id) & set(test.id))
+    assert ((not(set(train.id) & set(test.id))== True), "duplicates")
+    assert ((not set(train.text) & set(test.text)== True), "duplicates")
     logreg, count_vectorizer = LG(train, test)
     acc, pred =  testing(test, logreg, count_vectorizer)
 
-
-
     print(acc)
     zipped = zip(test.text, pred)
-    # for i in zipped:
-    #     print (i)
+    with open('resultsfile.txt', 'a') as file:
 
+        for i in zipped:
+            file.write(i)
+            file.write('\n')
 
     # for d in data[:2]:
     #     # d = alchemyapi.taxonomy("text", cor)

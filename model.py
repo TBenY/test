@@ -119,6 +119,9 @@ def splitsets(dataf, ratio):
     # test = dataf[idx:]
     train = dataf[msk]
     test = dataf[~msk]
+    assert (not(set(train.id) & set(test.id))== True), "duplicates"
+    assert (not set(train.text) & set(test.text)== True), "duplicates"
+
     return train, test
 
 
@@ -130,18 +133,22 @@ def LG(train, test):
     :return: predictions for test data
         """
 
+    pipeline = Pipeline((
+        ('vec', CountVectorizer( min_df=5, max_df=.95, max_features=10000, ngram_range=(1, 1))),
+        # ('clf', PassiveAggressiveClassifier(C=1)),
+        ('clf', linear_model.LogisticRegression(C=1e4)),
+    ))
 
-    count_vectorizer =  CountVectorizer( min_df=5, max_df=.95, max_features=5000, ngram_range=(1, 1))
-    counts = count_vectorizer.fit_transform(np.asarray(train['text']))
+    # counts = count_vectorizer.fit_transform(np.asarray(train['text']))
     targets = np.asarray(train['cl'])
-    vocab = np.array(count_vectorizer.get_feature_names())
-    logreg = linear_model.LogisticRegression(C=1e4)# the smaller the bigger the regularization
-    logreg.fit(counts, targets)
-    return logreg, count_vectorizer
+    # vocab = np.array(count_vectorizer.get_feature_names())
+    # logreg = linear_model.LogisticRegression(C=1e4)# the smaller the bigger the regularization
+    m_ = pipeline.fit(np.asarray(train['text'], targets))
+    return m_
 
-def testing(test, logreg, count_vectorizer):
-    testdata = count_vectorizer.transform(np.asarray(test['text']))
-    predictions = logreg.predict(testdata)
+def testing(test, m_):
+    # testdata = count_vectorizer.transform(np.asarray(test['text']))
+    predictions = m_.predict(np.asarray(test['text']))
 
     from sklearn.metrics import accuracy_score
     accuracy_score(predictions, test['cl'])
@@ -251,6 +258,12 @@ if __name__ == '__main__':
     # print(acc)
     # LGcv(train, test)
     logreg, count_vectorizer = LG(train, test)
-    acc, pred =  testing(test, logreg, count_vectorizer)
+    acc, pred = testing(test, logreg, count_vectorizer)
+    zipped = zip(test.text, pred)
+
+    with open('resultsfile.txt') as f:
+        for i in zipped:
+            f.writelines(i)
+
     print(acc)
 
