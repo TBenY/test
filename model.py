@@ -1,7 +1,8 @@
 __author__ = 'TalBY'
 
-import nltk, cPickle, re, string
+import nltk, cPickle, re, string, pandas
 import numpy as np
+from pandas import DataFrame
 from nltk.util import ngrams
 from nltk import word_tokenize
 from string import punctuation
@@ -143,17 +144,20 @@ def LG(train, test):
     targets = np.asarray(train['cl'])
     # vocab = np.array(count_vectorizer.get_feature_names())
     # logreg = linear_model.LogisticRegression(C=1e4)# the smaller the bigger the regularization
-    m_ = pipeline.fit(np.asarray(train['text'], targets))
-    return m_
-
-def testing(test, m_):
-    # testdata = count_vectorizer.transform(np.asarray(test['text']))
-    predictions = m_.predict(np.asarray(test['text']))
+    pipeline.fit(np.asarray(train['text']), targets)
+    predictions = pipeline.predict(np.asarray(test['text']))
 
     from sklearn.metrics import accuracy_score
     accuracy_score(predictions, test['cl'])
 
     return accuracy_score(predictions, test['cl']), predictions
+
+
+def testing(test, pipeline):
+    if type(test)== string:
+        pipeline.predict(test)
+    elif type(test)== DataFrame:
+        return pipeline.predict(np.asarray(test['text']))
 
 
 def LGcv(train, test):
@@ -257,13 +261,16 @@ if __name__ == '__main__':
     # acc, pred = LG(train, test)
     # print(acc)
     # LGcv(train, test)
-    logreg, count_vectorizer = LG(train, test)
-    acc, pred = testing(test, logreg, count_vectorizer)
-    zipped = zip(test.text, pred)
-
-    with open('resultsfile.txt') as f:
-        for i in zipped:
-            f.writelines(i)
+    acc, predictions = LG(train, test)
+    # acc, pred = testing(test, logreg)
 
     print(acc)
+
+    zipped = zip(test.text, predictions)
+    with open('resultsfile.txt', 'w') as f:
+        for i in zipped:
+            f.writelines(str(i))
+            f.writelines('\n')
+            f.writelines('\n')
+    f.close()
 

@@ -59,8 +59,7 @@ if __name__ == '__main__':
     dataf = cPickle.load(open("C:\Users\TalBY\PycharmProjects\AB\dataf.p", "rb"))
     train, test = splitsets(dataf, 0.8)
     predictions, gs_logreg = GS(train, test)
-    assert (not(set(train.id) & set(test.id))== True), "duplicates"
-    assert (not set(train.text) & set(test.text)== True), "duplicates"
+
     from sklearn.metrics import classification_report
     zipped = zip(test.text, predictions)
 
@@ -70,6 +69,8 @@ if __name__ == '__main__':
             f.writelines('\n')
             f.writelines('\n')
     f.close()
+
+
     # predictions = text_lg.predict(numpy.asarray(test['text']))
     #
     # from sklearn.metrics import accuracy_score
