@@ -3,7 +3,6 @@ __author__ = 'TalBY'
 import nltk, cPickle, re, string, numpy
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model import LogisticRegressionCV
 from model import splitsets, testing
 from sklearn.metrics import classification_report
 from sklearn.linear_model import PassiveAggressiveClassifier
@@ -49,10 +48,9 @@ def GS(train, test):
     acc = accuracy_score(predictions, test['cl'])
     print('acc:', acc)
     print(classification_report(test['cl'],predictions))
-    clf_name, clf = text_lg.steps[1]
+    # clf_name, clf = text_lg.steps[1]
 
     return predictions, gs_logreg
-
 
 
 if __name__ == '__main__':
@@ -69,12 +67,3 @@ if __name__ == '__main__':
             f.writelines('\n')
             f.writelines('\n')
     f.close()
-
-
-    # predictions = text_lg.predict(numpy.asarray(test['text']))
-    #
-    # from sklearn.metrics import accuracy_score
-    # acc = accuracy_score(predictions, test['cl'])
-    # print('acc:', acc)
-    # print(classification_report(test['cl'],predictions))
-                            # target_names=twenty_test_small.target_names))

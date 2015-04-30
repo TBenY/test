@@ -157,7 +157,7 @@ def testing(test, pipeline):
 
     if type(test)== Series:
         test = test.text
-    elif type(test)!= string:
+    elif type(test)!= str:
         return ('wrong input')
     return pipeline.predict(np.array([test]))
 
