@@ -34,6 +34,24 @@ def GETkW(data):
     return Dkw5834
 
 
+def reading(phrases, b,e,s, ids= []):
+    data = []
+    for phrase in phrases:
+        url = "http://api.audioburst.com/Search?value="+phrase+"&filter=sourceKey%20eq%205843%20&top=1000"
+        # print(phrase)
+        data.extend(getdata(url))
+        for d in data:
+            if d['id'] is not None and d['id'] not in ids:
+                ids.append(d['id'])
+        for num in range(b,e,s):
+            url = "http://api.audioburst.com/Search?value="+phrase+"&filter=sourceKey%20eq%205843%20&top=1000&skip="+str(num)
+            try:
+                data.extend(getdata(url))
+            except:
+                continue
+    return data, ids
+
+
 def radioshows(data):
     #get unique list of shows
     rdioshows = []
@@ -44,37 +62,21 @@ def radioshows(data):
 
 if __name__ == '__main__':
     phrases = ["Bloomberg%20travel%20weather",  "Bloomberg%20weather%20center", "Bloomberg%20meteorologist%20Gary%20Best",  "travel%20weather%20reports"]
-    data, l, ids = [], [], []
+    l, ids = [], []
     # li = ['Weather', 'Weather Channel', 'Forecast', 'Chilly', 'Wet', 'Snow', 'Rain', 'Temperature', 'Meteorologist', 'Storms', 'Dry', 'Clouds', 'Cold', 'Warms','Cloudy', 'Sunshine', 'Sunny', 'Showers', 'Cooler', 'Hurricane', 'Climate', 'Winter', 'Rainbow', 'Seasonal', 'Thunder', 'Atlantic', 'Breeze', 'Gusty', 'Fog', 'Snowfall', 'Colder', 'Chill', 'Skies', 'Lows', 'Breezy', 'Wind', 'Windy', 'Overnight']
     li = ['Weather Channel', 'Forecast', 'Temperature', 'Meteorologist']
-
     for st in li:
         l.append(st.replace(" ", "%20"))
-
-    for phrase in phrases+l:
-        url = "http://api.audioburst.com/Search?value="+phrase+"&filter=sourceKey%20eq%205843%20&top=1000"
-        # print(phrase)
-        data.extend(getdata(url))
-        for d in data:
-            if d['id'] is not None and d['id'] not in ids:
-                ids.append(d['id'])
-        for num in range(1000, 4000, 1000):
-            url = "http://api.audioburst.com/Search?value="+phrase+"&filter=sourceKey%20eq%205843%20&top=1000&skip="+str(num)
-            try:
-                data.extend(getdata(url))
-            except:
-                continue
+    data, ids = reading(phrases+l, 1000, 3000, 1000, ids)
     c = len(ids)
     print(len(data))
     dataf, ids = build_data_frame(data, [1])
 
     workfile = 'C:\Users\TalBY\Downloads\List of IDs_10000v2.txt'
-
     data_frame = DataFrame({'text': [], 'cl': [], 'id': []})
-
     with open(workfile) as f:
         lines = f.readlines()
-    for idx in lines[:(len(lines)/2-1)]:
+    for idx in lines[(len(lines)/2-10):(len(lines)/2-1)]:
         idxx = idx.replace('\r', '').replace('\n','')
         if idxx not in ids:
             ids.append(idxx)
@@ -91,13 +93,13 @@ if __name__ == '__main__':
     # print((len(lines)-c) == len(data_frame))
     print('ids:', len(ids))
     print('dataf:', len(dataf))
-    cPickle.dump(dataf, open("dataf.p", "wb" ))
+    cPickle.dump(dataf, open("dataf_2.p", "wb" ))
     # dataf = dataf.append(build_data_frame(data2, [0]))
     dataf = dataf.append(data_frame)
     # dataf = dataf.append(dataf2)
     # dataf.index = [i for i in range(0, len(dataf))]
     # dataf = dataf.reindex(numpy.random.permutation(dataf.index))
-    # cPickle.dump(dataf, open("dataf.p", "wb"))
+    # dataf = cPickle.load(dataf, open("dataf.p", "rb"))
 
     train, test = splitsets(dataf, 0.8)
     # acc, predictions = LG(train, test)
@@ -111,7 +113,11 @@ if __name__ == '__main__':
             f.writelines('\n')
             f.writelines('\n')
     f.close()
-    testing(test.iloc[0], gs_logreg)
+    cPickle.dump(gs_logreg, open("gs_logreg.p", "wb" ))
+
+
+    print(testing(test.iloc[0], gs_logreg))
+    print(testing('tal', gs_logreg))
 
     # for d in data[:2]:
     #     # d = alchemyapi.taxonomy("text", cor)

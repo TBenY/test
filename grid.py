@@ -33,7 +33,7 @@ def GS(train, test):
                   # 'count_vectorizer__min_df': numpy.linspace(1, 3,2),
                   'count_vectorizer__max_df' : [0.6, 0.7, 0.8, 0.9], #numpy.linspace(.7, .95, 4),
                   'count_vectorizer__max_features': [5000, 10000, 15000],
-                  'logreg__C': [1e-2, 1,1e4]}
+                  'logreg__C': [1e-2, 1, 1e4]}
     # }
 
     gs_logreg = GridSearchCV(text_lg, parameters, n_jobs=-1, verbose=2, refit=True)

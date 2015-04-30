@@ -2,7 +2,7 @@ __author__ = 'TalBY'
 
 import nltk, cPickle, re, string, pandas
 import numpy as np
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from nltk.util import ngrams
 from nltk import word_tokenize
 from string import punctuation
@@ -154,14 +154,15 @@ def LG(train, test):
 
 
 def testing(test, pipeline):
-    if type(test)== string:
-        pipeline.predict(test)
-    elif type(test)== DataFrame:
-        return pipeline.predict(np.asarray(test['text']))
+
+    if type(test)== Series:
+        test = test.text
+    elif type(test)!= string:
+        return ('wrong input')
+    return pipeline.predict(np.array([test]))
 
 
 def LGcv(train, test):
-#          """
     from sklearn.linear_model import LogisticRegressionCV
     from sklearn.metrics import log_loss
     from sklearn.cross_validation import cross_val_score
