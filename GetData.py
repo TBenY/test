@@ -31,27 +31,18 @@ def searchPat(data, word = 'weather'):
         patterns[k] = [item for sublist in v for item in sublist if item.lower() not in stop]
     return patterns
 
-if __name__ == '__main__':
-    url = "http://api.audioburst.com/search?value=Weather&top=10000"
-    url2 = "http://api.audioburst.com/Search/history?value=Weather&top=10000"
-    data = getdata(url)
 
-    d2 = getdata(url2)
-    # data = data+d2
-    print len(data)
-    #     print(pattern)
-    patterns = searchPat(data)
-    fds = {k: FreqDist(v) for k, v in patterns.iteritems()}
-    freqd = []
-    for k_, f in fds:
-        freqd[k_] = {k: f.freq(k) for k, w in f.items() if w > 1}
+    def main():
+        data = getdata(url)
+        d2 = getdata(url2)
+        print len(data)
+        patterns = searchPat(data)
+        fds = {k: FreqDist(v) for k, v in patterns.iteritems()}
+        freqd = []
+        for k_, f in fds:
+            freqd[k_] = {k: f.freq(k) for k, w in f.items() if w > 1}
+        # import operator
+        # sorted_x = sorted(freqd.items(), key=operator.itemgetter(1), reverse=True)
 
-    # import operator
-    # sorted_x = sorted(freqd.items(), key=operator.itemgetter(1), reverse=True)
-
-    cPickle.dump(freqd, open( "freqd.p", "wb" ) )
-    print(len(freqd))
-
-
-
-    ###
+        cPickle.dump(freqd, open( "freqd.p", "wb" ) )
+        print(len(freqd))
